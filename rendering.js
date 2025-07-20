@@ -1,3 +1,5 @@
+import { seedInput } from "./seedDisplay.js";
+
 // rendering.js
 export function renderFromSeed(seed) {
         const canvas = document.getElementById("viewport");
@@ -51,3 +53,6 @@ export function renderFromSeed(seed) {
                 }
         }
 }
+
+// Initial render
+renderFromSeed(parseInt(seedInput.value));
