@@ -167,7 +167,7 @@ export function renderFromSeed(seed) {
                         workerScript: "plugins/gifWorker.js", // path relative to your index.html
                         width: canvas.width,
                         height: canvas.height,
-                        transparent: "rgba(0,0,0,0)",
+                        transparent: "rgba(256, 256, 256, 1)",
                 });
 
                 gif.on("finished", function (blob) {
