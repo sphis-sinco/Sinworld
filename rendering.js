@@ -12,10 +12,7 @@ export function renderFromSeed(seed) {
         const height = canvas.height;
 
         // Define a color palette
-        const colorPalette = [
-                "black",
-                "white",
-        ];
+        const colorPalette = ["black", "white"];
 
         // Custom base weights (adjust these to your taste)
         const baseWeights = [
@@ -89,6 +86,15 @@ export function renderFromSeed(seed) {
                         placePixel(x, y, viewportPixels[i++]);
                 }
         }
+
+        console.log({
+                pixels: width * height,
+                colors: colorPalette,
+
+                colorWeights: baseWeights,
+                colorWeightsDistorted: distortedWeights,
+                colorWeightsTotal: totalWeight,
+        });
 }
 
 // Initial render
