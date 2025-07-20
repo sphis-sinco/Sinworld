@@ -1,4 +1,4 @@
 import { seedInput } from "./seedDisplay.js";
 
-const seedMax = 314159265359;
+const seedMax = 100
 seedInput.max = seedMax;
