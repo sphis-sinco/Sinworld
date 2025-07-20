@@ -9,6 +9,7 @@ var height = 480 / pixelScale;
 var viewportPixels = [];
 
 const color_black = "black";
+const color_white = "white";
 
 function placePixel(x = 0, y = 0, color = "black") {
         ctx.fillStyle = color;
@@ -20,7 +21,10 @@ function initalizeViewportPixels() {
         while (y < height+1) {
                 let x = 0;
                 while (x < width+1) {
-                        viewportPixels.push(color_black);
+                        if (Math.random() >= 0.5)
+                                viewportPixels.push(color_white);
+                        else
+                                viewportPixels.push(color_black);
 
                         x++;
                 }
