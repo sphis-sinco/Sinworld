@@ -15,10 +15,13 @@ export function renderFromSeed(seed) {
     const colorPalette = ["black", "white"];
 
     // Custom base weights
-    const baseWeights = [
-        1.0,   // black (dead)
-        1.0    // white (alive)
-    ];
+    const baseWeights = [1.0, 1.0]; // black = dead, white = alive
+
+    // === CUSTOMIZABLE RULES ===
+    const rules = {
+        survive: [2, 3], // Alive cells stay alive with 2 or 3 neighbors
+        birth: [3]       // Dead cells come to life with exactly 3 neighbors
+    };
 
     // Seeded RNG
     function createSeededRandom(seed) {
@@ -40,13 +43,12 @@ export function renderFromSeed(seed) {
         ctx.fillRect(x * pixelScale, y * pixelScale, pixelScale, pixelScale);
     }
 
-    // Generate weight modifiers based on seed
+    // Weighted color setup
     const modifiers = baseWeights.map(() => rand() - 0.5);
     const distortedWeights = baseWeights.map((w, i) => w * (1 + modifiers[i]));
     const totalWeight = distortedWeights.reduce((a, b) => a + b, 0);
     const normalizedWeights = distortedWeights.map(w => w / totalWeight);
 
-    // Cumulative weights
     const cumulativeWeights = [];
     let total = 0;
     for (let i = 0; i < normalizedWeights.length; i++) {
@@ -62,14 +64,13 @@ export function renderFromSeed(seed) {
         return colorPalette[colorPalette.length - 1]; // fallback
     }
 
-    // === Game of Life ===
+    // === Game of Life Setup ===
 
-    // Step 1: Seeded pixel grid (2D)
+    // 2D seeded pixel grid
     let viewportPixels = Array.from({ length: height }, () =>
         Array.from({ length: width }, () => chooseWeightedColor())
     );
 
-    // Step 2: Count alive neighbors
     function countAliveNeighbors(grid, x, y) {
         const dirs = [-1, 0, 1];
         let count = 0;
@@ -92,7 +93,7 @@ export function renderFromSeed(seed) {
         return count;
     }
 
-    // Step 3: Apply Conway's rules
+    // Use rules object here
     function evolveGrid(grid) {
         const newGrid = [];
 
@@ -103,9 +104,9 @@ export function renderFromSeed(seed) {
                 const neighbors = countAliveNeighbors(grid, x, y);
 
                 if (alive) {
-                    newGrid[y][x] = (neighbors === 2 || neighbors === 3) ? "white" : "black";
+                    newGrid[y][x] = rules.survive.includes(neighbors) ? "white" : "black";
                 } else {
-                    newGrid[y][x] = (neighbors === 3) ? "white" : "black";
+                    newGrid[y][x] = rules.birth.includes(neighbors) ? "white" : "black";
                 }
             }
         }
@@ -113,7 +114,6 @@ export function renderFromSeed(seed) {
         return newGrid;
     }
 
-    // Step 4: Draw
     function drawGrid(grid) {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -122,19 +122,18 @@ export function renderFromSeed(seed) {
         }
     }
 
-    // Step 5: Animate (10 FPS)
     function animate() {
         viewportPixels = evolveGrid(viewportPixels);
         drawGrid(viewportPixels);
         setTimeout(() => requestAnimationFrame(animate), 100); // ~10 FPS
     }
 
-    // Initial draw and start animation
     drawGrid(viewportPixels);
     requestAnimationFrame(animate);
 
     console.log({
         pixels: width * height,
+        rules,
         colors: colorPalette,
         colorWeights: baseWeights,
         colorWeightsDistorted: distortedWeights,
