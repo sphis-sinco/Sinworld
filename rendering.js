@@ -3,7 +3,7 @@ export function renderFromSeed(seed) {
   const canvas = document.getElementById("viewport");
   const ctx = canvas.getContext("2d");
 
-  const pixelScale = 10;
+  const pixelScale = 1;
   canvas.width = 640 / pixelScale;
   canvas.height = 640 / pixelScale;
   const width = canvas.width;
