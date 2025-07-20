@@ -2,6 +2,7 @@ import { seedInput } from "./seedDisplay.js";
 
 let animationFrameId = null; // store current animation frame id
 let viewportPixels = null;   // store current grid state
+let lastFrameTime = 0;       // for frame timing control
 
 export function renderFromSeed(seed) {
     // Cancel any ongoing animation
@@ -13,7 +14,7 @@ export function renderFromSeed(seed) {
     const canvas = document.getElementById("viewport");
     const ctx = canvas.getContext("2d");
 
-    const pixelScale = 4;
+    const pixelScale = 2;
 
     // Set canvas size ONCE here (optional: move outside for performance)
     canvas.width = 640 / pixelScale;
@@ -135,9 +136,22 @@ export function renderFromSeed(seed) {
         grid[y][x] = (grid[y][x] === ALIVE) ? DEAD : ALIVE;
     }
 
-    function animate() {
-        viewportPixels = evolveGrid(viewportPixels);
-        drawGrid(viewportPixels);
+    // Calculate FPS and frame interval based on pixelScale
+    // Base FPS is 10 at pixelScale=4, scale linearly:
+    const baseFPS = 30;
+    const fps = baseFPS * (pixelScale / 4);
+    const frameInterval = 1000 / fps;
+
+    function animate(timestamp) {
+        if (!lastFrameTime) lastFrameTime = timestamp;
+        const elapsed = timestamp - lastFrameTime;
+
+        if (elapsed > frameInterval) {
+            viewportPixels = evolveGrid(viewportPixels);
+            drawGrid(viewportPixels);
+            lastFrameTime = timestamp - (elapsed % frameInterval);
+        }
+
         animationFrameId = requestAnimationFrame(animate);
     }
 
@@ -154,5 +168,7 @@ export function renderFromSeed(seed) {
         colorWeights: baseWeights,
         colorWeightsDistorted: distortedWeights,
         colorWeightsTotal: totalWeight,
+        pixelScale,
+        fps,
     });
 }
