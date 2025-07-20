@@ -1,22 +1,22 @@
 import { seedInput } from "./seedDisplay.js";
 
-let animationFrameId = null; // store current animation frame id
-let viewportPixels = null;   // store current grid state
-let lastFrameTime = 0;       // for frame timing control
+let animationFrameId = null;
+let viewportPixels = null;
+let lastFrameTime = 0;
+let isPaused = false; // pause flag
 
 export function renderFromSeed(seed) {
-    // Cancel any ongoing animation
     if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
+    lastFrameTime = 0;
+    isPaused = false; // reset pause state on new seed
 
     const canvas = document.getElementById("viewport");
     const ctx = canvas.getContext("2d");
 
-    const pixelScale = 2;
-
-    // Set canvas size ONCE here (optional: move outside for performance)
+    const pixelScale = 1;
     canvas.width = 640 / pixelScale;
     canvas.height = 640 / pixelScale;
 
@@ -26,20 +26,15 @@ export function renderFromSeed(seed) {
     const colorPalette = ["black", "white"];
     const DEAD = colorPalette[0];
     const ALIVE = colorPalette[1];
-    const baseWeights = [1.0, 1.0]; // black = dead, white = alive
+    const baseWeights = [1.0, 1.0];
 
     const rules = {
         survive: [2, 3],
-        birth: [3]
+        birth: [3],
     };
 
-    // Seeded RNG generator
     function createSeededRandom(seed) {
-        let m = 0x80000000;
-        let a = 1664525;
-        let c = 1013904223;
-        let state = seed;
-
+        let m = 0x80000000, a = 1664525, c = 1013904223, state = seed;
         return function () {
             state = (a * state + c) % m;
             return state / m;
@@ -53,7 +48,6 @@ export function renderFromSeed(seed) {
         ctx.fillRect(x * pixelScale, y * pixelScale, pixelScale, pixelScale);
     }
 
-    // Weighted color setup
     const modifiers = baseWeights.map(() => rand() - 0.5);
     const distortedWeights = baseWeights.map((w, i) => w * (1 + modifiers[i]));
     const totalWeight = distortedWeights.reduce((a, b) => a + b, 0);
@@ -74,7 +68,6 @@ export function renderFromSeed(seed) {
         return colorPalette[colorPalette.length - 1];
     }
 
-    // Initialize grid using seed
     viewportPixels = Array.from({ length: height }, () =>
         Array.from({ length: width }, () => chooseWeightedColor())
     );
@@ -82,7 +75,6 @@ export function renderFromSeed(seed) {
     function countAliveNeighbors(grid, x, y) {
         const dirs = [-1, 0, 1];
         let count = 0;
-
         for (let dy of dirs) {
             for (let dx of dirs) {
                 if (dx === 0 && dy === 0) continue;
@@ -92,24 +84,19 @@ export function renderFromSeed(seed) {
                     nx >= 0 && nx < width &&
                     ny >= 0 && ny < height &&
                     grid[ny][nx] === ALIVE
-                ) {
-                    count++;
-                }
+                ) count++;
             }
         }
-
         return count;
     }
 
     function evolveGrid(grid) {
         const newGrid = [];
-
         for (let y = 0; y < height; y++) {
             newGrid[y] = [];
             for (let x = 0; x < width; x++) {
                 const alive = grid[y][x] === ALIVE;
                 const neighbors = countAliveNeighbors(grid, x, y);
-
                 if (alive) {
                     newGrid[y][x] = rules.survive.includes(neighbors) ? ALIVE : DEAD;
                 } else {
@@ -117,7 +104,6 @@ export function renderFromSeed(seed) {
                 }
             }
         }
-
         return newGrid;
     }
 
@@ -129,16 +115,8 @@ export function renderFromSeed(seed) {
         }
     }
 
-    // Toggle cell state helper function
-    // Flips the cell between DEAD and ALIVE using colorPalette values
-    function toggleCell(grid, x, y) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return; // boundary check
-        grid[y][x] = (grid[y][x] === ALIVE) ? DEAD : ALIVE;
-    }
-
-    // Calculate FPS and frame interval based on pixelScale
-    // Base FPS is 10 at pixelScale=4, scale linearly:
-    const baseFPS = 30;
+    // Pause-aware animation loop with FPS control
+    const baseFPS = 10;
     const fps = baseFPS * (pixelScale / 4);
     const frameInterval = 1000 / fps;
 
@@ -146,7 +124,7 @@ export function renderFromSeed(seed) {
         if (!lastFrameTime) lastFrameTime = timestamp;
         const elapsed = timestamp - lastFrameTime;
 
-        if (elapsed > frameInterval) {
+        if (!isPaused && elapsed > frameInterval) {
             viewportPixels = evolveGrid(viewportPixels);
             drawGrid(viewportPixels);
             lastFrameTime = timestamp - (elapsed % frameInterval);
@@ -158,17 +136,8 @@ export function renderFromSeed(seed) {
     drawGrid(viewportPixels);
     animationFrameId = requestAnimationFrame(animate);
 
-    // Expose toggleCell globally for external use (optional)
-    renderFromSeed.toggleCell = toggleCell;
-
-    console.log({
-        pixels: width * height,
-        rules,
-        colors: colorPalette,
-        colorWeights: baseWeights,
-        colorWeightsDistorted: distortedWeights,
-        colorWeightsTotal: totalWeight,
-        pixelScale,
-        fps,
-    });
+    // Pause toggle and setter exposed for external control
+    renderFromSeed.isPaused = () => isPaused;
+    renderFromSeed.togglePause = () => { isPaused = !isPaused; };
+    renderFromSeed.setPause = (val) => { isPaused = !!val; };
 }
