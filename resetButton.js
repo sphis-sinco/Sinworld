@@ -4,6 +4,7 @@ import { renderFromSeed } from "./rendering.js";
 const seedInput = document.getElementById("seedRange");
 const seedDisplay = document.getElementById("seedValue");
 const resetBtn = document.getElementById("resetBtn");
+const loadBtn = document.getElementById("loadBtn");
 
 function updateSeedValueDisplay() {
         seedDisplay.textContent = seedInput.value;
@@ -13,15 +14,16 @@ function updateSeedValueDisplay() {
 renderFromSeed(parseInt(seedInput.value));
 updateSeedValueDisplay();
 
-// Re-render when slider changes
 seedInput.addEventListener("input", () => {
+        updateSeedValueDisplay();
+});
+
+resetBtn.addEventListener("click", () => {
+        seedInput.value = 50;
         updateSeedValueDisplay();
         renderFromSeed(parseInt(seedInput.value));
 });
 
-// Reset button triggers re-render using current seed
-resetBtn.addEventListener("click", () => {
-        seedInput.value = 50;
-        updateSeedValueDisplay();
+loadBtn.addEventListener("click", () => {
         renderFromSeed(parseInt(seedInput.value));
 });
