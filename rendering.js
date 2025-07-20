@@ -17,7 +17,7 @@ export function renderFromSeed(seed) {
         // Custom base weights (adjust these to your taste)
         const baseWeights = [
                 1.0, // black
-                0.001, // white
+                1.0, // white
         ];
 
         let viewportPixels = [];
