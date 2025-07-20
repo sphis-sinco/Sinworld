@@ -15,26 +15,12 @@ export function renderFromSeed(seed) {
         const colorPalette = [
                 "black",
                 "white",
-                "#ff0040", // red
-                "#00e5ff", // cyan
-                "#39ff14", // green
-                "#ffff00", // yellow
-                "#ff00ff", // magenta
-                "#ff8000", // orange
-                "#8080ff", // lavender
         ];
 
         // Custom base weights (adjust these to your taste)
         const baseWeights = [
                 1.0, // black
                 1.0, // white
-                0.8, // red
-                0.8, // cyan
-                1.2, // green
-                0.5, // yellow
-                0.6, // magenta
-                0.9, // orange
-                0.7, // lavender
         ];
 
         let viewportPixels = [];
