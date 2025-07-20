@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sinworld</title>
-</head>
-<body>
-        <button id="resetBtn">Reset</button>
-        <hr>
-        <canvas width="640" height="480" id="viewport"></canvas>
-        
-        <script src="./rendering.js" type="module"></script>
-        <script src="./resetButton.js" type="module"></script>
-</body>
+        <head>
+                <meta charset="UTF-8" />
+                <meta
+                        name="viewport"
+                        content="width=device-width, initial-scale=1.0"
+                />
+                <title>Sinworld</title>
+        </head>
+        <body>
+                <label for="seedRange">Seed:</label>
+                <input
+                        type="range"
+                        id="seedRange"
+                        min="0"
+                        max="100"
+                        value="50"
+                />
+                <span id="seedValue">50</span>
+                <button id="resetBtn">Reset</button>
+                <hr />
+                <canvas width="640" height="480" id="viewport"></canvas>
+
+                <script src="./rendering.js" type="module"></script>
+                <script src="./resetButton.js" type="module"></script>
+        </body>
 </html>
