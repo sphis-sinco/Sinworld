@@ -5,6 +5,9 @@ let viewportPixels = null;
 let lastFrameTime = 0;
 let isPaused = false;
 
+let gif = null;
+let recording = false;
+
 export function renderFromSeed(seed) {
         if (animationFrameId !== null) {
                 cancelAnimationFrame(animationFrameId);
@@ -12,6 +15,8 @@ export function renderFromSeed(seed) {
         }
         lastFrameTime = 0;
         isPaused = false;
+        recording = false;
+        gif = null;
 
         const canvas = document.getElementById("viewport");
         const ctx = canvas.getContext("2d");
@@ -29,8 +34,8 @@ export function renderFromSeed(seed) {
         const baseWeights = [1.0, 1.0];
 
         const rules = {
-                survive: [1, 5, 9],
-                birth: [2, 6, 10],
+                survive: [2, 3],
+                birth: [3],
         };
 
         function createSeededRandom(seed) {
@@ -144,6 +149,65 @@ export function renderFromSeed(seed) {
         const fps = baseFPS * (pixelScale / 4);
         const frameInterval = 1000 / fps;
 
+        // GIF buttons
+        const startBtn = document.getElementById("startGifBtn");
+        const stopBtn = document.getElementById("stopGifBtn");
+
+        function initGif() {
+                if (!window.GIF) {
+                        alert(
+                                "GIF.js library not loaded. Please add the script."
+                        );
+                        return;
+                }
+
+                gif = new GIF({
+                        workers: 2,
+                        quality: 10,
+                        workerScript: "plugins/gifWorker.js", // path relative to your index.html
+                        width: canvas.width,
+                        height: canvas.height,
+                        transparent: "rgba(0,0,0,0)",
+                });
+
+                gif.on("finished", function (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "sinworld.gif";
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                        recording = false;
+                });
+        }
+
+        if (startBtn && stopBtn) {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+
+                startBtn.onclick = () => {
+                        initGif();
+                        if (!gif) return;
+
+                        recording = true;
+                        startBtn.disabled = true;
+                        stopBtn.disabled = false;
+                        console.log("GIF recording started");
+                };
+
+                stopBtn.onclick = () => {
+                        if (!gif) return;
+
+                        recording = false;
+                        stopBtn.disabled = true;
+                        startBtn.disabled = false;
+                        console.log("Rendering GIF...");
+                        gif.render();
+                };
+        }
+
         function animate(timestamp) {
                 if (!lastFrameTime) lastFrameTime = timestamp;
                 const elapsed = timestamp - lastFrameTime;
@@ -152,6 +216,13 @@ export function renderFromSeed(seed) {
                         viewportPixels = evolveGrid(viewportPixels);
                         drawGrid(viewportPixels);
                         lastFrameTime = timestamp - (elapsed % frameInterval);
+
+                        if (recording && gif) {
+                                gif.addFrame(canvas, {
+                                        copy: true,
+                                        delay: frameInterval,
+                                });
+                        }
                 }
 
                 animationFrameId = requestAnimationFrame(animate);
@@ -160,7 +231,7 @@ export function renderFromSeed(seed) {
         drawGrid(viewportPixels);
         animationFrameId = requestAnimationFrame(animate);
 
-        // Expose pause controls
+        // Pause controls exposed
         renderFromSeed.isPaused = () => isPaused;
         renderFromSeed.togglePause = () => {
                 isPaused = !isPaused;

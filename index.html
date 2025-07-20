@@ -18,13 +18,17 @@
                         value="50"
                 />
                 <span id="seedValue">50</span>
-                
+
                 <button id="minusButton">-</button>
                 <button id="plusButton">+</button>
 
                 <button id="resetBtn">Reset</button>
                 <button id="loadBtn">Load</button>
                 <button id="pauseBtn">Pause</button>
+                <hr />
+                <button id="startGifBtn">Start GIF</button>
+                <button id="stopGifBtn" disabled>Stop & Export GIF</button>
+
                 <hr />
                 <canvas width="640" height="480" id="viewport"></canvas>
 
@@ -34,5 +38,6 @@
                 <script src="./seedDisplay.js" type="module"></script>
                 <script src="./seedRange.js" type="module"></script>
                 <script src="./pauseButton.js" type="module"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
         </body>
 </html>
