@@ -1,4 +1,4 @@
-import { renderFromSeed } from "./rendering";
+import { renderFromSeed } from "./rendering.js";
 
 const pauseBtn = document.getElementById("pauseBtn");
 pauseBtn.addEventListener("click", () => {
