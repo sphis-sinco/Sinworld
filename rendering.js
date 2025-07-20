@@ -23,6 +23,8 @@ export function renderFromSeed(seed) {
     const height = canvas.height;
 
     const colorPalette = ["black", "white"];
+    const DEAD = colorPalette[0];
+    const ALIVE = colorPalette[1];
     const baseWeights = [1.0, 1.0]; // black = dead, white = alive
 
     const rules = {
@@ -88,7 +90,7 @@ export function renderFromSeed(seed) {
                 if (
                     nx >= 0 && nx < width &&
                     ny >= 0 && ny < height &&
-                    grid[ny][nx] === "white"
+                    grid[ny][nx] === ALIVE
                 ) {
                     count++;
                 }
@@ -104,13 +106,13 @@ export function renderFromSeed(seed) {
         for (let y = 0; y < height; y++) {
             newGrid[y] = [];
             for (let x = 0; x < width; x++) {
-                const alive = grid[y][x] === "white";
+                const alive = grid[y][x] === ALIVE;
                 const neighbors = countAliveNeighbors(grid, x, y);
 
                 if (alive) {
-                    newGrid[y][x] = rules.survive.includes(neighbors) ? "white" : "black";
+                    newGrid[y][x] = rules.survive.includes(neighbors) ? ALIVE : DEAD;
                 } else {
-                    newGrid[y][x] = rules.birth.includes(neighbors) ? "white" : "black";
+                    newGrid[y][x] = rules.birth.includes(neighbors) ? ALIVE : DEAD;
                 }
             }
         }
@@ -126,6 +128,13 @@ export function renderFromSeed(seed) {
         }
     }
 
+    // Toggle cell state helper function
+    // Flips the cell between DEAD and ALIVE using colorPalette values
+    function toggleCell(grid, x, y) {
+        if (x < 0 || x >= width || y < 0 || y >= height) return; // boundary check
+        grid[y][x] = (grid[y][x] === ALIVE) ? DEAD : ALIVE;
+    }
+
     function animate() {
         viewportPixels = evolveGrid(viewportPixels);
         drawGrid(viewportPixels);
@@ -134,6 +143,9 @@ export function renderFromSeed(seed) {
 
     drawGrid(viewportPixels);
     animationFrameId = requestAnimationFrame(animate);
+
+    // Expose toggleCell globally for external use (optional)
+    renderFromSeed.toggleCell = toggleCell;
 
     console.log({
         pixels: width * height,
