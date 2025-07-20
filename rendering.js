@@ -1,29 +1,36 @@
 import { seedInput } from "./seedDisplay.js";
 
-// rendering.js
+let animationFrameId = null; // store current animation frame id
+let viewportPixels = null;   // store current grid state
+
 export function renderFromSeed(seed) {
+    // Cancel any ongoing animation
+    if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+
     const canvas = document.getElementById("viewport");
     const ctx = canvas.getContext("2d");
 
     const pixelScale = 4;
+
+    // Set canvas size ONCE here (optional: move outside for performance)
     canvas.width = 640 / pixelScale;
     canvas.height = 640 / pixelScale;
+
     const width = canvas.width;
     const height = canvas.height;
 
-    // Define a color palette
     const colorPalette = ["black", "white"];
-
-    // Custom base weights
     const baseWeights = [1.0, 1.0]; // black = dead, white = alive
 
-    // === CUSTOMIZABLE RULES ===
     const rules = {
-        survive: [2, 3], // Alive cells stay alive with 2 or 3 neighbors
-        birth: [3]       // Dead cells come to life with exactly 3 neighbors
+        survive: [2, 3],
+        birth: [3]
     };
 
-    // Seeded RNG
+    // Seeded RNG generator
     function createSeededRandom(seed) {
         let m = 0x80000000;
         let a = 1664525;
@@ -61,13 +68,11 @@ export function renderFromSeed(seed) {
         for (let i = 0; i < cumulativeWeights.length; i++) {
             if (r < cumulativeWeights[i]) return colorPalette[i];
         }
-        return colorPalette[colorPalette.length - 1]; // fallback
+        return colorPalette[colorPalette.length - 1];
     }
 
-    // === Game of Life Setup ===
-
-    // 2D seeded pixel grid
-    let viewportPixels = Array.from({ length: height }, () =>
+    // Initialize grid using seed
+    viewportPixels = Array.from({ length: height }, () =>
         Array.from({ length: width }, () => chooseWeightedColor())
     );
 
@@ -93,7 +98,6 @@ export function renderFromSeed(seed) {
         return count;
     }
 
-    // Use rules object here
     function evolveGrid(grid) {
         const newGrid = [];
 
@@ -125,11 +129,11 @@ export function renderFromSeed(seed) {
     function animate() {
         viewportPixels = evolveGrid(viewportPixels);
         drawGrid(viewportPixels);
-        setTimeout(() => requestAnimationFrame(animate), 100); // ~10 FPS
+        animationFrameId = requestAnimationFrame(animate);
     }
 
     drawGrid(viewportPixels);
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
 
     console.log({
         pixels: width * height,
@@ -140,6 +144,3 @@ export function renderFromSeed(seed) {
         colorWeightsTotal: totalWeight,
     });
 }
-
-// Initial render
-renderFromSeed(parseInt(seedInput.value));
