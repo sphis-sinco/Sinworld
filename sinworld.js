@@ -17,9 +17,9 @@ function placePixel(x = 0, y = 0, color = "black") {
 
 function initalizeViewportPixels() {
         let y = 0;
-        while (y < height) {
+        while (y < height+1) {
                 let x = 0;
-                while (x < width) {
+                while (x < width+1) {
                         viewportPixels.push(color_black);
 
                         x++;
