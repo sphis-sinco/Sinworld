@@ -1,0 +1,1 @@
+AI world similar to conways game of lfie
